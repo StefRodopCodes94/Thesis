@@ -9,9 +9,9 @@ from torch.autograd import Variable
 from torchvision import datasets, transforms
 import cv2 as cv
 import os
-# mnist.py --batch-size 64 --epochs 50 --seed 1 --log-interval 10 --eval-images 100 --eval-interval 1 --save-interval 25 
-# --save-model vaeGoodtrain --model-save-path ./Model_state
-#  --save-image vae --mode train-eval --num-samples 10
+#  python Mnist_Seq.py --batch-size 64 --epochs 50 --seed 1 --log-interval 10 --eval-images 100 --eval-interval 1 --save-interval 25 
+ #--save-model vae_Seq --model-save-path ./Model_state
+ # --save-image vae --mode train-eval --num-samples 10
 
 parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
 parser.add_argument('--batch-size', type=int, default=64, metavar='N',
@@ -43,6 +43,10 @@ parser.add_argument("--mode", type=str, default="train-eval", choices=["train", 
 
 parser.add_argument("--num-samples", default=10, type=int,
         help="The number of samples to draw from distribution")
+parser.add_argument("--Latent_dimensions", default=10, type=int,
+        help="Latent dimensions for the model")
+
+
 
 args = parser.parse_args()
 
@@ -54,7 +58,10 @@ kwargs = {}
 if "train" in args.mode:
     train_loader = torch.utils.data.DataLoader(
         datasets.MNIST('../data', train=True, download=True,
-                       transform=transforms.ToTensor()),
+                       transform= transforms.Compose([
+    transforms.ToTensor(),  # Convert the data to a tensor
+    transforms.Normalize((0.1307,), (0.3081,))  # Normalize the data to have mean 0.1307 and standard deviation 0.3081
+])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
 if "eval" in args.mode:
@@ -73,11 +80,14 @@ class VAE(nn.Module):
     def __init__(self):
         super(VAE, self).__init__()
 
-        self.z_size = 2
+        self.z_size = args.Latent_dimensions
 
-        self.fc1 = nn.Linear(784, 400)
-        self.fc21 = nn.Linear(400, self.z_size)
-        self.fc22 = nn.Linear(400, self.z_size)
+        # Encoder layers with nn.Sequential
+        self.encoder = nn.Sequential(
+            nn.Linear(784, 400),
+            nn.ReLU(),
+            nn.Linear(400, self.z_size * 2)  # Double the output size for mean and log variance
+        )
 
         self.fc3 = nn.Linear(self.encoder_size(), 400)
         self.fc4 = nn.Linear(400, 784)
@@ -89,8 +99,8 @@ class VAE(nn.Module):
         return self.z_size
 
     def encode(self, x):
-        h1 = self.relu(self.fc1(x))
-        return self.fc21(h1), self.fc22(h1)
+        h1 = self.encoder(x)
+        return h1[:, :self.z_size], h1[:, self.z_size:]  # Split into mean and log variance
 
     def reparametrize(self, mu, logvar):
         std = logvar.mul(0.5).exp_()
@@ -110,17 +120,22 @@ class VAE(nn.Module):
         mu, logvar = self.encode(x.view(-1, 784))
         return self.sampleAndDecode(mu, logvar)
 
-
 model = VAE()
 
 reconstruction_function = nn.BCELoss()
 reconstruction_function.size_average = False
 
-def loss_function(recon_xs, x, mu, logvar):
-    BCE = 0
-    for recon_x in recon_xs:
-        target = x.view(-1, 784)
-        BCE += reconstruction_function(recon_x, target)
+
+def loss_function(recon_xs, x, mu, z_logvar):
+        BCE = nn.functional.mse_loss(recon_xs, x.view(-1, 784), reduction='sum')
+        KLD = -0.5 * torch.sum(1 + z_logvar - mu.pow(2) - z_logvar.exp())
+        return BCE + (KLD * 0.01) #  (0.01  *kld_loss)
+
+#def loss_function(recon_xs, x, mu, z_logvar):
+ #   BCE = 0
+  #  for recon_x in recon_xs:
+   #     target = x.view(-1, 784)
+    #    BCE += reconstruction_function(recon_x, target)
 
     # see Appendix B from VAE paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
@@ -132,10 +147,11 @@ def loss_function(recon_xs, x, mu, logvar):
     #  posterior inference can be made especially efficient by fitting an approximate inference model (also called a recognition model) 
     # to the intractable posterior using the proposed lower bound estimator. Theoretical advantages are reflected in experimental results.
     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-    KLD_element = mu.pow(2).add_(logvar.exp()).mul_(-1).add_(1).add_(logvar)
-    KLD = torch.sum(KLD_element).mul_(-0.5)
+   # KLD_element = mu.pow(2).add_(logvar.exp()).mul_(-1).add_(1).add_(logvar)
+   # KLD = torch.sum(KLD_element).mul_(-0.5)
 
-    return BCE + KLD
+    #return BCE + KLD
+
 
 
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
