@@ -9,6 +9,9 @@ from torch.autograd import Variable
 from torchvision import datasets, transforms
 import cv2 as cv
 import os
+# mnist.py --batch-size 64 --epochs 50 --seed 1 --log-interval 10 --eval-images 100 --eval-interval 1 --save-interval 25 
+# --save-model vaeGoodtrain --model-save-path ./Model_state
+#  --save-image vae --mode train-eval --num-samples 10
 
 parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
 parser.add_argument('--batch-size', type=int, default=64, metavar='N',
@@ -69,7 +72,7 @@ class VAE(nn.Module):
     def __init__(self):
         super(VAE, self).__init__()
 
-        self.z_size = 20
+        self.z_size = 2
 
         self.fc1 = nn.Linear(784, 400)
         self.fc21 = nn.Linear(400, self.z_size)
@@ -121,8 +124,6 @@ def loss_function(recon_xs, x, mu, logvar):
     # see Appendix B from VAE paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
     # https://arxiv.org/abs/1312.6114
-    #How can we perform efficient inference and learning in directed probabilistic models,
-    #  in the presence of continuous latent variables with intractable posterior distributions, and large datasets?
     #  We introduce a stochastic variational inference and learning algorithm that scales to large datasets and, under some mild 
     # differentiability conditions, even works in the intractable case. Our contributions are two-fold. 
     # First, we show that a reparameterization of the variational lower bound yields a lower bound estimator that can be straightforwardly optimized using standard stochastic gradient
