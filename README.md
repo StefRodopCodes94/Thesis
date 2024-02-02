@@ -15,7 +15,7 @@ This project explores the intersection of beta-Variational Autoencoders (beta-VA
 
 - Decoded MNIST images for sanity test : 
 
-![Original/Decoded](graphs/bad2.png )
+![Original/Decoded](graphs/bad%202.png)
 ![Original/Decoded](graphs/zeros.png )
 
 
