@@ -15,8 +15,8 @@ This project explores the intersection of beta-Variational Autoencoders (beta-VA
 
 - Decoded MNIST images for sanity test : 
 
-![](graphs\bad2.png )
-![](graphs\zeros.png )
+![Original/Decoded](graphs\bad2.png )
+![Original/Decoded](graphs\zeros.png )
 
 
 
@@ -25,9 +25,9 @@ This project explores the intersection of beta-Variational Autoencoders (beta-VA
 
 Our results demonstrate the effectiveness of combining beta-VAE, graph theory, and counterfactual reasoning in analyzing both the MNIST dataset and real-world biological data. We have achieved significant improvements in model interpretability, fidelity of generated data, and the ability to perform meaningful counterfactual analyses. This design proves to be highly beneficial, especially when paired with the right data and a dedicated clinical team, opening new avenues for research and application in bioinformatics and healthcare.
 
-![](graphs\grap_mic.png "Results")
-![](graphs\mahna.png )
-![](graphs\optimization.png )
+![plot](graphs\grap_mic.png "Results")
+![plot](graphs\mahna.png )
+![plot](graphs\optimization.png )
 
 
 ## Thesis
