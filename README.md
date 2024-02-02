@@ -28,3 +28,7 @@ Our results demonstrate the effectiveness of combining beta-VAE, graph theory, a
 ![](graphs\grap_mic.png "Results")
 ![](graphs\mahna.png )
 ![](graphs\optimization.png )
+
+
+## Thesis
+- [Thesis](https://www.overleaf.com/read/tgpnkxvyspxd#c2c950)
